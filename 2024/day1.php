@@ -1,7 +1,5 @@
 <?php
 
-require_once(dirname(__FILE__) . '/../Utils.php');
-
 function step1(array $list1, array $list2): void
 {
     sort($list1);
@@ -30,9 +28,9 @@ function step2(array $list1, array $list2): void
 
 // ---
 
-$input = Utils::getInput(2024, 1);
+$rows = file(str_replace('.php', '.input.txt', __FILE__));
 
-foreach ($input as $i => $row) {
+foreach ($rows as $i => $row) {
     [$list1[], $list2[]] = explode('   ', trim($row));
 }
 

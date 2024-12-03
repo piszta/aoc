@@ -1,7 +1,5 @@
 <?php
 
-require_once(dirname(__FILE__) . '/../Utils.php');
-
 function analyze(array $report): bool
 {
     $oldDiff = null;
@@ -30,7 +28,7 @@ function analyze(array $report): bool
 
 // ---
 
-$rows = Utils::getInput(2024, 2);
+$rows = file(str_replace('.php', '.input.txt', __FILE__));
 
 $sum1 = 0;
 $sum2 = 0;

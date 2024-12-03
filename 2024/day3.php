@@ -1,10 +1,6 @@
 <?php
 
-require_once(dirname(__FILE__) . '/../Utils.php');
-
-// ---
-
-$rows = Utils::getInput(2024, 3);
+$rows = file(str_replace('.php', '.input.txt', __FILE__));
 
 $sum1 = 0;
 $sum2 = 0;
