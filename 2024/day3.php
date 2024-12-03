@@ -15,22 +15,22 @@ foreach ($rows as $row) {
     preg_match_all('/mul\((\d{1,3}),(\d{1,3})\)|do\(\)|don\'t\(\)/', $row, $matches);
 
     for ($i = 0; $i < count($matches[0]); $i++) {
-        switch (substr($matches[0][$i], 0, 3)) {
-            case 'mul':
+        switch ($matches[0][$i]) {
+            case 'do()':
+                $enabled = true;
+                break;
+
+            case 'don\'t()':
+                $enabled = false;
+                break;
+
+            default:
                 $sum1 += $matches[1][$i] * $matches[2][$i];
 
                 if ($enabled) {
                     $sum2 += $matches[1][$i] * $matches[2][$i];
                 }
 
-                break;
-
-            case 'do(':
-                $enabled = true;
-                break;
-
-            case 'don':
-                $enabled = false;
                 break;
         }
     }
