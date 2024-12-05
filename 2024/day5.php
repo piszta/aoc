@@ -12,27 +12,17 @@ foreach ($updates as $update) {
 
     do {
         $updated = false;
-
         foreach ($pairs as $pair) {
-            $page1 = array_search($pair[0], $update);
-            if ($page1 === false) {
-                continue;
-            }
+            if (($page1 = array_search($pair[0], $update)) === false) { continue;}
+            if (($page2 = array_search($pair[1], $update)) === false) { continue;}
+            if ($page1 < $page2) { continue; }
 
-            $page2 = array_search($pair[1], $update);
-            if ($page2 === false) {
-                continue;
-            }
+            $step = 2;
+            $update[$page1] = $pair[1];
+            $update[$page2] = $pair[0];
+            $updated = true;
 
-            if ($page1 > $page2) {
-                $step = 2;
-
-                $update[$page1] = $pair[1];
-                $update[$page2] = $pair[0];
-
-                $updated = true;
-                break;
-            }
+            break;
         }
     } while ($updated === true);
 
