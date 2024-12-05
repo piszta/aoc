@@ -13,8 +13,8 @@ foreach ($updates as $update) {
     do {
         $updated = false;
         foreach ($pairs as $pair) {
-            if (($page1 = array_search($pair[0], $update)) === false) { continue;}
-            if (($page2 = array_search($pair[1], $update)) === false) { continue;}
+            if (($page1 = array_search($pair[0], $update)) === false) { continue; }
+            if (($page2 = array_search($pair[1], $update)) === false) { continue; }
             if ($page1 < $page2) { continue; }
 
             $step = 2;
