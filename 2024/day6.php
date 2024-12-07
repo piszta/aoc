@@ -15,72 +15,14 @@ function map($rows)
     echo "\n";
 }
 
-function search($origRows, $x, $y, $dir, $step)
+function search2($origRows, $x, $y, $dir, $ox, $oy, $moves)
 {
-    static $obstacles = [];
-
-    $rows = $origRows;
-
-    $moves = [];
-    $moves[] = [$x, $y, $dir];
-
-    if ($step == 2) {
-        if (in_array([$x + DIRECTIONS[$dir][0], $y + DIRECTIONS[$dir][1]], $obstacles)) {
-            return true;
-        }
-
-        $obstacles[] = [$x + DIRECTIONS[$dir][0], $y + DIRECTIONS[$dir][1]];
-
-        $rows[$y + DIRECTIONS[$dir][1]][$x + DIRECTIONS[$dir][0]] = 'O';
-        $dir = ($dir + 1) % 4;
+    if (!in_array([$ox, $oy], $moves)) {
+        //var_dump([$ox, $oy]);
+        return false;
     }
 
-    $sum1 = 2;
-    $sum2 = 0;
-
-    $moved = false;
-
-    while ($next = $rows[$y + DIRECTIONS[$dir][1]][$x + DIRECTIONS[$dir][0]] ?? null) {
-        $moves[] = [$x, $y, $dir];
-        $current = $rows[$y][$x];
-
-        if (in_array($current, ['|', '-']) && $current != ($dir % 2 ? '-' : '|')) {
-            $rows[$y][$x] = '+';
-        } elseif (!in_array($current, ['^', '+'])) {
-            $sum1++;
-            $rows[$y][$x] = $dir % 2 ? '-' : '|';
-        }
-
-        if ($next == '#' || $next == 'O') {
-            $dir = ($dir + 1) % 4;
-            $moved = false;
-            continue;
-        }
-
-        if ($step == 1) {
-            if (!search($rows, $x, $y, $dir, 2)) {
-                $sum2++;
-                echo "\nsum 2: $sum2\n";
-            }
-        }
-
-        $x += DIRECTIONS[$dir][0];
-        $y += DIRECTIONS[$dir][1];
-
-        if (in_array([$x, $y, $dir], $moves)) {
-            map($rows);
-            return false;
-        }
-
-        $moved = true;
-    }
-
-    return [$sum1, $sum2];
-}
-
-function search2($origRows, $x, $y, $dir, $ox, $oy)
-{
-    if (abs($x - $ox) <= 1 && abs($y - $oy) <= 1) {
+    if ($x == $ox && $y == $oy) {
         return false;
     }
 
@@ -118,9 +60,11 @@ function search2($origRows, $x, $y, $dir, $ox, $oy)
         $y += DIRECTIONS[$dir][1];
 
         if (in_array([$x, $y, $dir], $moves)) {
-            //map($rows);
+            map($rows);
             return true;
         }
+
+        $moves[] = [$x, $y, $dir];
 
         $moved = true;
     }
@@ -128,31 +72,36 @@ function search2($origRows, $x, $y, $dir, $ox, $oy)
     return false;
 }
 
-function search3($origRows, $x, $y, $dir, $step)
+function search3($origRows, $sx, $sy, $sdir = 0, $ox = null, $oy = null)
 {
+    global $obstacles;
+
     $rows = $origRows;
+    $x = $sx; $y = $sy; $dir = $sdir;
 
-    $moves = [];
-    $moves[] = [$x, $y, $dir];
-
-    if ($step == 2) {
-        if (in_array([$x + DIRECTIONS[$dir][0], $y + DIRECTIONS[$dir][1]], $obstacles)) {
-            return true;
-        }
-
-        $obstacles[] = [$x + DIRECTIONS[$dir][0], $y + DIRECTIONS[$dir][1]];
-
-        $rows[$y + DIRECTIONS[$dir][1]][$x + DIRECTIONS[$dir][0]] = 'O';
-        $dir = ($dir + 1) % 4;
+    if ($ox && $oy) {
+        $step = 2;
+        $rows[$oy][$ox] = 'O';
+    } else {
+        $step = 1;
     }
 
-    $sum1 = 2;
+    $moves = [];
+
+    $sum1 = 1;
     $sum2 = 0;
 
-    $moved = false;
+    while (true) {
+        //usleep(500000);
+        //map($rows);
 
-    while ($next = $rows[$y + DIRECTIONS[$dir][1]][$x + DIRECTIONS[$dir][0]] ?? null) {
+        if (in_array([$x, $y, $dir], $moves)) {
+            //map($rows);
+            return false;
+        }
+
         $moves[] = [$x, $y, $dir];
+
         $current = $rows[$y][$x];
 
         if (in_array($current, ['|', '-']) && $current != ($dir % 2 ? '-' : '|')) {
@@ -162,28 +111,28 @@ function search3($origRows, $x, $y, $dir, $step)
             $rows[$y][$x] = $dir % 2 ? '-' : '|';
         }
 
+        $next = $rows[$y + DIRECTIONS[$dir][1]][$x + DIRECTIONS[$dir][0]] ?? null;
+
+        if ($next === null) {
+            break;
+        }
+
         if ($next == '#' || $next == 'O') {
             $dir = ($dir + 1) % 4;
-            $moved = false;
             continue;
         }
 
-        if ($step == 1) {
-            if (!search($rows, $x, $y, $dir, 2)) {
-                $sum2++;
-                echo "\nsum 2: $sum2\n";
-            }
-        }
+        $lx = $x; $ly = $y;
 
         $x += DIRECTIONS[$dir][0];
         $y += DIRECTIONS[$dir][1];
 
-        if (in_array([$x, $y, $dir], $moves)) {
-            map($rows);
-            return false;
+        if ($step == 1 /*&& $next != '^'*/ && !isset($obstacles["{$x}_{$y}"])) {
+            if (search3($rows, $lx, $ly, ($dir + 1) % 4, $x, $y) === false) {
+                $obstacles["{$x}_{$y}"] = true;
+                $sum2++;
+            }
         }
-
-        $moved = true;
     }
 
     return [$sum1, $sum2];
@@ -192,7 +141,7 @@ function search3($origRows, $x, $y, $dir, $step)
 // ---
 
 $rows = file(str_replace('.php', '.example.txt', __FILE__), FILE_IGNORE_NEW_LINES);
-$rows = file(str_replace('.php', '.input.txt', __FILE__), FILE_IGNORE_NEW_LINES);
+//$rows = file(str_replace('.php', '.input.txt', __FILE__), FILE_IGNORE_NEW_LINES);
 
 foreach ($rows as $sy => $row) {
     if (($sx = strpos($row, '^')) !== false) {
@@ -201,25 +150,26 @@ foreach ($rows as $sy => $row) {
 }
 
 /*
-[$sum1, $sum2] = search($rows, $x, $y, 0, 1);
-
-echo "step 1: $sum1\n";
-echo "step 2: $sum2\n";
-*/
-
-echo "new step 2:\n";
+echo "\nversion 2:\n";
 
 $sum2 = 0;
 
 foreach ($rows as $oy => $row) {
     for ($ox = 0; $ox < strlen($row); $ox++) {
-        $r = search2($rows, $sx, $sy, 0, $ox, $oy);
+        $r = search2($rows, $sx, $sy, 0, $ox, $oy, $moves);
         $sum2 += (int) $r;
-        if ($r) {
-            echo "sum: $sum2, $ox, $oy\n";
-        }
     }
 }
 
 echo "step 2: $sum2\n";
+*/
 
+echo "\nversion 3:\n";
+
+$obstacles = [];
+
+[$sum1, $sum2] = search3($rows, $sx, $sy, 0);
+
+echo "obstacles: " . count($obstacles) . "\n";
+echo "step 1: $sum1\n";
+echo "step 2: $sum2\n";
