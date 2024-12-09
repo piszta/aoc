@@ -44,12 +44,11 @@ function part2($raw)
 
     while (true) {
         [$from, $len, $number] = searchDataBlock($raw, $from);
-        $to = searchEmptyBlock($raw, $len);
-
         if ($from < 0) {
             break;
         }
 
+        $to = searchEmptyBlock($raw, $len);
         if ($to == false || $from < $to) {
             continue;
         }
@@ -62,9 +61,6 @@ function part2($raw)
 
 function searchDataBlock($raw, $from)
 {
-    $len = false;
-    $number = false;
-
     for (; $from >= 0; $from--) {
         if (($number = $raw[$from]) == '.') {
             continue;
@@ -80,7 +76,7 @@ function searchDataBlock($raw, $from)
         }
     }
 
-    return [$from, $len, $number];
+    return [$from, $len ?? false, $number ?? false];
 }
 
 function searchEmptyBlock($raw, $len)
@@ -125,10 +121,8 @@ $sum1 = 0;
 $sum2 = 0;
 
 $raw = [];
-$id = 0;
-
 for ($x = 0; $x < strlen($data); $x++) {
-    $raw = array_merge($raw, array_fill(0, $data[$x], $x % 2 ? '.' : $id++));
+    $raw = array_merge($raw, array_fill(0, $data[$x], $x % 2 ? '.' : (int) ($x / 2)));
 }
 
 $sum1 = part1($raw);
