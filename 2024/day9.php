@@ -43,27 +43,14 @@ function part2($raw)
     $from = count($raw) - 1;
 
     while (true) {
-        //sleep(1);
-        //echo implode('', $raw) . "\n";
-
         [$from, $len, $number] = searchDataBlock($raw, $from);
         $to = searchEmptyBlock($raw, $len);
-
-        //echo "from: $from, to: $to, len: $len, number: $number\n";
 
         if ($from < 0) {
             break;
         }
 
-        if ($from < $to) {
-            continue;
-        }
-
-        //echo "from: $from, to: $to, len: $len, number: $number\n";
-
-        //echo "to: $to\n";
-
-        if ($to == false) {
+        if ($to == false || $from < $to) {
             continue;
         }
 
@@ -132,7 +119,7 @@ function copyData(&$raw, $from, $to, $len, $number)
 // ---
 
 $data = Input::text(str_replace('.php', '.example.txt', __FILE__));
-//$data = Input::text(str_replace('.php', '.input.txt', __FILE__));
+$data = Input::text(str_replace('.php', '.input.txt', __FILE__));
 
 $sum1 = 0;
 $sum2 = 0;
