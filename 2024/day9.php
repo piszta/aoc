@@ -3,15 +3,22 @@
 require_once dirname(__FILE__) . "/../Input.php";
 //require_once dirname(__FILE__) . "/../Map.php";
 
+function checksum($raw)
+{
+    $sum = 0;
+
+    for ($x = 1; $x < count($raw); $x++) {
+        $sum += $x * (int) $raw[$x];
+    }
+
+    return $sum;
+}
+
 function part1($raw)
 {
     $from = count($raw) - 1;
 
     while (true) {
-        //sleep(1);
-        //echo "$raw\n";
-
-        //$raw = rtrim($raw, '.');
         $x = array_search('.', $raw);
 
         for (; $from >= 0; $from--) {
@@ -28,7 +35,98 @@ function part1($raw)
         $raw[$from] = '.';
     }
 
-    return $raw;
+    return checksum($raw);
+}
+
+function part2($raw)
+{
+    $from = count($raw) - 1;
+
+    while (true) {
+        //sleep(1);
+        //echo implode('', $raw) . "\n";
+
+        [$from, $len, $number] = searchDataBlock($raw, $from);
+        $to = searchEmptyBlock($raw, $len);
+
+        //echo "from: $from, to: $to, len: $len, number: $number\n";
+
+        if ($from < 0) {
+            break;
+        }
+
+        if ($from < $to) {
+            continue;
+        }
+
+        //echo "from: $from, to: $to, len: $len, number: $number\n";
+
+        //echo "to: $to\n";
+
+        if ($to == false) {
+            continue;
+        }
+
+        copyData($raw, $from + 1, $to, $len, $number);
+    }
+
+    return checksum($raw);
+}
+
+function searchDataBlock($raw, $from)
+{
+    $len = false;
+    $number = false;
+
+    for (; $from >= 0; $from--) {
+        if (($number = $raw[$from]) == '.') {
+            continue;
+        }
+
+        $f = $from;
+
+        for (; $from >= 0; $from--) {
+            if ($raw[$from] != $number) {
+                $len = $f - $from;
+                break 2;
+            }
+        }
+    }
+
+    return [$from, $len, $number];
+}
+
+function searchEmptyBlock($raw, $len)
+{
+    for ($to = 0; $to < count($raw); $to++) {
+        $number = $raw[$to];
+
+        if ($number != '.') {
+            continue;
+        }
+
+        for ($i = 0; $i < $len; $i++) {
+            if ($to + $i >= count($raw)) {
+                break 2;
+            }
+
+            if ($raw[$to + $i] != '.') {
+                continue 2;
+            }
+        }
+
+        return $to;
+    }
+
+    return false;
+}
+
+function copyData(&$raw, $from, $to, $len, $number)
+{
+    for ($i = 0; $i < $len; $i++) {
+        $raw[$to + $i] = $number;
+        $raw[$from + $i] = '.';
+    }
 }
 
 // ---
@@ -46,11 +144,8 @@ for ($x = 0; $x < strlen($data); $x++) {
     $raw = array_merge($raw, array_fill(0, $data[$x], $x % 2 ? '.' : $id++));
 }
 
-$raw = part1($raw);
-
-for ($x = 1; $x < count($raw); $x++) {
-    $sum1 += $x * (int) $raw[$x];
-}
+$sum1 = part1($raw);
+$sum2 = part2($raw);
 
 echo "step 1: $sum1\n";
 echo "step 2: $sum2\n";
